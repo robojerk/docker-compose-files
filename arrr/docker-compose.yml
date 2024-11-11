@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    hostname: sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - HOST_WHITELIST=sabnzbd
+    restart: unless-stopped
+    ports:
+      - 777:8080
+    volumes:
+      - /opt/docker/sabnzbd/config:/config
+      - cifs_downloads:/downloads
+    networks:
+      - npm_network
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    hostname: prowlarr
+    depends_on:
+      - sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/prowlarr/data:/config
+    ports:
+      - 9696:9696
+    networks:
+      - npm_network
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    hostname: radarr
+    depends_on:
+      - prowlarr
+      - sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/radarr/data:/config
+      - cifs_videos:/media
+      - cifs_downloads:/downloads
+    ports:
+      - 7878:7878
+    networks:
+      - npm_network
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    hostname: sonarr
+    depends_on:
+      - prowlarr
+      - sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/sonarr/data:/config
+      - cifs_videos:/media
+      - cifs_downloads:/downloads
+    ports:
+      - 8989:8989
+    networks:
+      - npm_network
+
+volumes:
+  cifs_videos:
+    external: true
+  cifs_downloads:
+    external: true
+
+networks:
+  npm_network:
+    external: true

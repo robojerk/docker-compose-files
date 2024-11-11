@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  jellyplex-watched:
+    image: luigi311/jellyplex-watched:latest
+    container_name: jellyplex-watched
+    hostname: jellyplex-watched
+    user: 1000:1000    
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+    volumes:
+      - /opt/docker/jellyplex-watched:/config
+    env_file:
+      - /opt/docker/jellyplex-watched/.env
+

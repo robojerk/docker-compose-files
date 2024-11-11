@@ -1,0 +1,17 @@
+services:
+  plex:
+    image: plexinc/pms-docker
+    container_name: plex
+    hostname: plex
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=America/Los_Angeles
+      - PLEX_CLAIM=${PLEX_TOKEN}
+    volumes:
+      - /opt/docker/plex:/config
+      - /mnt/hdd0/plex_trascode/:/transcode
+      - cifs_videos:/data
+volumes:
+  cifs_videos:
+    external: true

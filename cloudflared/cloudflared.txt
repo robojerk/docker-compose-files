@@ -1,0 +1,119 @@
+# Secure Docker Network Setup with Cloudflared and NPM
+
+## Overview
+This setup creates a secure DMZ network for Cloudflared and Nginx Proxy Manager (NPM), while keeping internal services isolated. It allows both remote access through Cloudflare Tunnel and direct local access.
+
+## Network Architecture
+- `dmz`: External-facing network for Cloudflared and NPM
+- `internal`: Isolated network for internal services
+- NPM acts as a secure gateway between networks 
+bash
+Create the DMZ network
+docker network create dmz
+Create the internal network
+docker network create internal
+
+### 2. Deploy Cloudflared
+Create `cloudflared.yml`:
+
+```yaml
+version: "3.9"
+services:
+  tunnel:
+    container_name: cloudflared-tunnel
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN=your_tunnel_token_here
+    networks:
+      - dmz
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+networks:
+  dmz:
+    external: true
+    name: dmz
+```
+
+
+Deploy:
+bash
+docker-compose -f cloudflared.yml up -d
+
+
+### 3. Deploy Internal Services
+Create service stacks with this network configuration:
+yaml
+services:
+your-service:
+# ... service config ...
+networks:
+internal
+networks:
+internal:
+external: true
+name: internal
+
+### 4. Deploy Nginx Proxy Manager
+Create `nginx-proxy-manager.yml`:
+
+yaml
+version: "3.9"
+services:
+npm:
+image: 'jc21/nginx-proxy-manager:latest'
+restart: unless-stopped
+ports:
+'80:80'
+'81:81'
+'443:443'
+volumes:
+npm_data:/data
+npm_letsencrypt:/etc/letsencrypt
+networks:
+dmz
+internal
+volumes:
+npm_data:
+npm_letsencrypt:
+networks:
+dmz:
+external: true
+name: dmz
+internal:
+external: true
+name: internal
+
+Deploy:
+docker-compose -f nginx-proxy-manager.yml up -d
+
+
+### 5. Configure NPM
+1. Access NPM admin panel at `http://your-ip:81`
+2. Default login:
+   - Email: `admin@example.com`
+   - Password: `changeme`
+3. Add proxy hosts for:
+   - Local access (e.g., `service.local`)
+   - Remote access (your Cloudflare domain)
+
+### 6. Configure Local DNS (Optional)
+To enable local domain names:
+1. Set up local DNS server (e.g., Pi-hole) or use router DNS
+2. Add A records pointing to NPM's IP address
+3. Configure domains like `*.local` or `*.home`
+
+## Access Methods
+- **Local Access**: `http://local-ip:81` or `service.local`
+- **Remote Access**: `https://your-domain.com`
+
+## Security Notes
+- Cloudflared container is isolated in DMZ
+- Internal services cannot access internet directly
+- All external traffic goes through Cloudflare Tunnel
+- NPM provides secure gateway between networks

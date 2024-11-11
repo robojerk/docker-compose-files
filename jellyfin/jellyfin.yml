@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    hostname: jellyfin
+    restart: unless-stopped
+    user: 1000:1000
+    networks:
+      - npm_network
+    ports:
+      - "8096:8096"  # HTTP port
+      - "8920:8920"  # HTTPS port
+      - "7359:7359/udp"  # Service discovery
+      - "1900:1900/udp"  # DLNA
+    environment:
+      - TZ=America/Los_Angeles
+    volumes:
+      - /opt/docker/jellyfin:/config
+      - /mnt/hdd0/jellyfin_trascode/:/cache
+      - cifs_videos:/media
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+volumes:
+  cifs_videos:
+    external: true
+
+networks:
+  npm_network:
+    external: true

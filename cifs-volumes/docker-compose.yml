@@ -1,0 +1,21 @@
+volumes:
+  videos:    # This gets mounted as cifs_videos
+    driver: local
+    driver_opts:
+      type: cifs
+      device: //${CIFS_SERVER}/Videos
+      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},vers=3.0,uid=${PUID},gid=${PGID}"
+  
+  downloads:   # This gets mounted as cifs_downloads
+    driver: local
+    driver_opts:
+      type: cifs
+      device: //${CIFS_SERVER}/Downloads
+      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},vers=3.0,uid=${PUID},gid=${PGID}"
+
+  music:   # This gets mounted as cifs_music
+    driver: local
+    driver_opts:
+      type: cifs
+      device: //${CIFS_SERVER}/Music
+      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},vers=3.0,uid=${PUID},gid=${PGID}"
