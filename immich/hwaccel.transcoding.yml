@@ -1,0 +1,30 @@
+# Configurations for hardware-accelerated transcoding
+# https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
+
+services:
+  cpu: {}
+
+  quicksync:
+    devices:
+      - /dev/dri:/dev/dri
+    environment:
+      - LIBVA_DRIVER_NAME=iHD
+      - LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
+      - INTEL_MEDIA_VA_DRIVER_PATH=/usr/lib/x86_64-linux-gnu/dri
+      - ENABLE_INTEL_LOW_POWER=true
+      - INTEL_MEDIA_CODEC_CODER_PATH=/usr/lib/x86_64-linux-gnu/dri/iHD_coder.so
+      - INTEL_MEDIA_CODEC_DECODER_PATH=/usr/lib/x86_64-linux-gnu/dri/iHD_decoder.so
+      - INTEL_MEDIA_CODEC_ENCODER_PATH=/usr/lib/x86_64-linux-gnu/dri/iHD_encoder.so
+      - INTEL_MEDIA_CODEC_VP9_DEC_PATH=/usr/lib/x86_64-linux-gnu/dri/iHD_vp9dec.so
+      - INTEL_MEDIA_CODEC_VP9_ENC_PATH=/usr/lib/x86_64-linux-gnu/dri/iHD_vp9enc.so
+
+  cuda:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility

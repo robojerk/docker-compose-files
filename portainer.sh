@@ -6,4 +6,4 @@ docker run \
     --restart=always \
     -v /run/podman/podman.sock:/var/run/docker.sock \
     -v portainer_data:/data \
-    portainer/portainer-ce:2.21.4
+    portainer/portainer-ce:sts

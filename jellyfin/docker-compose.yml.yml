@@ -16,6 +16,12 @@ services:
       - "1900:1900/udp"  # DLNA
     environment:
       - TZ=America/Los_Angeles
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/i915:/dev/i915
+    group_add:
+      - "render"
+      - "video"
     volumes:
       - /opt/docker/jellyfin:/config
       - /mnt/hdd0/jellyfin_trascode/:/cache

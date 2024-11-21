@@ -6,8 +6,8 @@
 # The compose file on main may not be compatible with the latest release.
 #
 
-name: immich
-
+#name: 'Immich'
+version: '3.8'
 services:
   immich-server:
     container_name: immich_server
@@ -17,7 +17,7 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - stack.env
+      - .env
     ports:
       - '2283:2283'
     depends_on:
@@ -32,20 +32,23 @@ services:
     environment:
       - IMMICH_SERVER_URL=https://immich.raines.xyz
       - IMMICH_API_URL_EXTERNAL=https://immich.raines.xyz/api
+      - INTEL_MEDIA_VA_DRIVER_PATH=/usr/lib/x86_64-linux-gnu/dri
+      - LIBVA_DRIVER_NAME=iHD
+      - LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
+    devices:
+      - /dev/dri:/dev/dri
 
   immich-machine-learning:
     container_name: immich_machine_learning
     hostname: immich_machine_learning
-    # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
-    # Example tag: ${IMMICH_VERSION:-release}-cuda
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
-    #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino
+    extends:
+      file: hwaccel.ml.yml
+      service: openvino
     volumes:
       - model-cache:/cache
     env_file:
-      - stack.env
+      - .env
     restart: always
     healthcheck:
       disable: false
@@ -78,7 +81,6 @@ services:
     healthcheck:
       test: pg_isready --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' || exit 1; Chksum="$$(psql --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
       interval: 5m
-      start_interval: 30s
       start_period: 5m
     command:
       [
