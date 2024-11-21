@@ -8,6 +8,9 @@ services:
     environment:
       - TZ=America/Los_Angeles
       - PLEX_CLAIM=${PLEX_TOKEN}
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/i915:/dev/i915
     volumes:
       - /opt/docker/plex:/config
       - /mnt/hdd0/plex_trascode/:/transcode

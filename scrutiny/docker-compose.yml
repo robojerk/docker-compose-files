@@ -1,0 +1,21 @@
+version: '3'
+services:
+  scrutiny:
+    image: ghcr.io/analogj/scrutiny:master-omnibus
+    container_name: scrutiny
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+      - 8086:8086
+    volumes:
+      - /opt/docker/scrutiny/config:/opt/scrutiny/config
+      - /opt/docker/scrutiny/influxdb2:/opt/scrutiny/influxdb
+      - /run/udev:/run/udev:ro
+    cap_add:
+      - SYS_RAWIO
+    devices:
+      - /dev/disk/by-id/ata-ST4000NT001-3M2101_WX10P4K2:/dev/sda
+      - /dev/disk/by-id/ata-ST4000VN008-2DR166_ZDH7G1N9:/dev/sdb
+      - /dev/disk/by-id/ata-ST4000VN008-2DR166_ZDH7G6FF:/dev/sdc
+      - /dev/disk/by-id/ata-TOSHIBA_HDWG760UZSVA_64L0A06DFWBJ:/dev/sdd
+      - /dev/disk/by-id/ata-TOSHIBA_HDWQ140_47TQK0MCFPBE:/dev/sde
